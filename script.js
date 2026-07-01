@@ -1,14 +1,23 @@
-const API_KEY = "";
+let API_KEY = "";
+let API_URL = "";
+let MODEL = "";
 
-const API_URL =
-  "";
+async function carregarConfiguracao() {
+  const response = await fetch("keys.json");
+  const config = await response.json();
 
-const MODEL = "gpt-5-mini";
+  API_KEY = config.apiKeyAzure;
+  API_URL = config.endpointAzure;
+  MODEL = config.model;
+}
 
 async function enviarMensagem() {
+  if (!API_KEY) {
+    await carregarConfiguracao();
+  }
+
   const input = document.getElementById("chatInput");
   const messages = document.getElementById("messages");
-
   const texto = input.value.trim();
 
   if (texto === "") return;
@@ -40,7 +49,7 @@ async function enviarMensagem() {
       },
       body: JSON.stringify({
         model: MODEL,
-       input: `
+        input: `
 Responda sempre em português do Brasil.
 Organize a resposta com:
 - título curto
@@ -53,31 +62,36 @@ Pergunta do usuário: ${texto}
       })
     });
 
-    const data = await response.json();
+    const textoResposta = await response.text();
+
+    if (!textoResposta) {
+      throw new Error("A Azure retornou uma resposta vazia.");
+    }
+
+    const data = JSON.parse(textoResposta);
 
     document.getElementById("carregando").remove();
 
-let resposta = "Não consegui ler a resposta.";
+    let resposta = "Não consegui ler a resposta.";
 
-console.log(data);
-
-if (data.output_text) {
-    resposta = data.output_text;
-} else if (data.output) {
-    for (const item of data.output) {
+    if (data.output_text) {
+      resposta = data.output_text;
+    } else if (data.output) {
+      for (const item of data.output) {
         if (item.type === "message" && item.content) {
-            for (const parte of item.content) {
-                if (parte.type === "output_text") {
-                    resposta = parte.text;
-                }
+          for (const parte of item.content) {
+            if (parte.type === "output_text") {
+              resposta = parte.text;
             }
+          }
         }
+      }
     }
-}
 
-if (data.error) {
-    resposta = "Erro da Azure: " + data.error.message;
-}
+    if (data.error) {
+      resposta = "Erro da Azure: " + data.error.message;
+    }
+
     messages.innerHTML += `
       <div class="msg ia">
         <div class="avatar">E</div>
