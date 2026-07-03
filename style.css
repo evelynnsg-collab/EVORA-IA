@@ -214,3 +214,17 @@
 
     opacity:0;
 }
+#btnMicrofone{
+    width:55px;
+    border:none;
+    border-radius:12px;
+    cursor:pointer;
+    font-size:22px;
+    background:#2563eb;
+    color:white;
+    transition:.3s;
+}
+
+#btnMicrofone:hover{
+    background:#1d4ed8;
+}

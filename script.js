@@ -2,6 +2,10 @@ let API_KEY = "";
 let API_URL = "";
 let MODEL = "";
 
+let SPEECH_KEY = "";
+let SPEECH_REGION = "";
+let SPEECH_VOICE = "";
+
 async function carregarConfiguracao() {
   const response = await fetch("keys.json");
   const config = await response.json();
@@ -9,6 +13,10 @@ async function carregarConfiguracao() {
   API_KEY = config.apiKeyAzure;
   API_URL = config.endpointAzure;
   MODEL = config.model;
+
+  SPEECH_KEY = config.speechKey;
+  SPEECH_REGION = config.speechRegion;
+  SPEECH_VOICE = config.speechVoice;
 }
 
 async function enviarMensagem() {
@@ -105,8 +113,11 @@ Pergunta do usuário: ${texto}
 
     messages.scrollTop = messages.scrollHeight;
 
+    await falar(resposta);
+
   } catch (error) {
-    document.getElementById("carregando").remove();
+    const carregando = document.getElementById("carregando");
+    if (carregando) carregando.remove();
 
     messages.innerHTML += `
       <div class="msg ia">
@@ -131,6 +142,97 @@ function novoChat() {
       </div>
     </div>
   `;
+}
+
+function ouvirMicrofone() {
+  const SpeechRecognition =
+    window.SpeechRecognition || window.webkitSpeechRecognition;
+
+  if (!SpeechRecognition) {
+    alert("Seu navegador não suporta reconhecimento de voz.");
+    return;
+  }
+
+  const recognition = new SpeechRecognition();
+
+  recognition.lang = "pt-BR";
+  recognition.interimResults = false;
+  recognition.continuous = false;
+  recognition.maxAlternatives = 1;
+
+  const botaoMicrofone = document.getElementById("btnMicrofone");
+
+  if (botaoMicrofone) {
+    botaoMicrofone.textContent = "🎙️ Ouvindo...";
+    botaoMicrofone.disabled = true;
+  }
+
+  setTimeout(() => {
+    recognition.start();
+  }, 300);
+
+  recognition.onresult = function(event) {
+    const texto = event.results[0][0].transcript;
+    document.getElementById("chatInput").value = texto;
+
+    if (botaoMicrofone) {
+      botaoMicrofone.textContent = "🎤";
+      botaoMicrofone.disabled = false;
+    }
+
+    enviarMensagem();
+  };
+
+  recognition.onerror = function(event) {
+    if (botaoMicrofone) {
+      botaoMicrofone.textContent = "🎤";
+      botaoMicrofone.disabled = false;
+    }
+
+    if (event.error === "no-speech") {
+      alert("Não ouvi nada. Clique no microfone e fale em seguida.");
+    } else {
+      alert("Erro: " + event.error);
+    }
+  };
+
+  recognition.onend = function() {
+    if (botaoMicrofone) {
+      botaoMicrofone.textContent = "🎤";
+      botaoMicrofone.disabled = false;
+    }
+  };
+}
+
+async function falar(texto) {
+  if (!SPEECH_KEY || !SPEECH_REGION) {
+    console.warn("Speech Key ou região não configuradas no keys.json.");
+    return;
+  }
+
+  const response = await fetch(
+    `https://${SPEECH_REGION}.tts.speech.microsoft.com/cognitiveservices/v1`,
+    {
+      method: "POST",
+      headers: {
+        "Ocp-Apim-Subscription-Key": SPEECH_KEY,
+        "Content-Type": "application/ssml+xml",
+        "X-Microsoft-OutputFormat": "audio-24khz-48kbitrate-mono-mp3"
+      },
+      body: `
+<speak version="1.0"
+xmlns="http://www.w3.org/2001/10/synthesis"
+xml:lang="pt-BR">
+  <voice name="${SPEECH_VOICE}">
+    ${texto}
+  </voice>
+</speak>`
+    }
+  );
+
+  const blob = await response.blob();
+  const audio = new Audio(URL.createObjectURL(blob));
+  audio.play();
 }
 
 document.addEventListener("keydown", function(e) {
