@@ -1,87 +1,21 @@
-# 🤖 EVORA IA
+# EVORA — versão pronta para Vercel
 
-EVORA IA é um chatbot desenvolvido em HTML, CSS e JavaScript, integrado ao modelo GPT-5 Mini através da API do Azure AI Foundry.
+Esta versão contém `index.html` (com a imagem da EVORA de armadura vermelha incorporada) e duas rotas serverless opcionais (`/api/status` e `/api/chat`).
 
-## 📋 Objetivo
+## Como publicar
 
-O projeto foi desenvolvido para demonstrar a integração de uma aplicação web com Inteligência Artificial utilizando os serviços da Microsoft Azure.
+1. Acesse https://vercel.com/new e importe o código deste projeto em um repositório GitHub.
+2. Framework Preset: **Other**; Root Directory: a pasta contendo `index.html`.
+3. Publique. Você receberá um endereço `*.vercel.app`.
+4. Para ativar a conversa livre via IA, abra **Project Settings → Environment Variables** e cadastre `GEMINI_API_KEY` como chave privada nos ambientes desejados. Faça novo deployment após configurar. Opcional: `GEMINI_MODEL` (padrão `gemini-2.5-flash`). Não coloque chaves no HTML ou no GitHub.
 
----
+## O que funciona
 
-## 🚀 Tecnologias utilizadas
+- Visual da EVORA com armadura vermelha, mensagens, microfone e voz pelo navegador (Chrome/Edge recomendados).
+- Sem GEMINI_API_KEY: modo demonstração; as respostas livres de IA ficam indisponíveis.
+- Com GEMINI_API_KEY válida: chamadas de chat passam pela função no servidor. O tráfego dos visitantes usa a sua cota da API; considere limitação de acesso/rate limiting antes de divulgar amplamente.
+- Microfone depende de autorização do navegador. Personagem é uma imagem estática, não há animação do rosto nem controle do computador.
 
-- HTML5
-- CSS3
-- JavaScript
-- Azure AI Foundry
-- GPT-5 Mini
-- API REST
+## Publicar no Windows com dois cliques
 
----
-
-## 📁 Estrutura do projeto
-
-```
-/
-│
-├── index.html
-├── chat.html
-├── style.css
-├── script.js
-├── keys.json
-├── README.md
-├── boasvindas.png
-└── chat-fundo.png
-```
-
----
-
-## ⚙️ Configuração
-
-As informações da API ficam armazenadas no arquivo:
-
-```
-keys.json
-```
-
-Exemplo:
-
-```json
-{
-    "apiKey": "SUA_API_KEY",
-    "endpoint": "SEU_ENDPOINT",
-    "model": "gpt-5-mini"
-}
-```
-
----
-
-## ▶️ Como executar
-
-1. Abra o projeto no Visual Studio Code.
-2. Execute utilizando um servidor local (Live Server).
-3. Abra o arquivo:
-
-```
-chat.html
-```
-
-4. Digite uma mensagem para conversar com a EVORA IA.
-
----
-
-## 💡 Funcionalidades
-
-- Chat em tempo real
-- Integração com GPT-5 Mini
-- Interface moderna
-- Histórico de conversa
-- Respostas organizadas em português
-
----
-
-## 👩‍💻 Desenvolvido por
-
-Evelyn Santos
-
-Projeto desenvolvido para fins acadêmicos utilizando Microsoft Azure AI Foundry.
+Extraia o ZIP local e dê dois cliques em **PUBLICAR_NA_VERCEL.bat**. Você precisa ter o Node.js instalado e concluir o login da Vercel quando for solicitado.
